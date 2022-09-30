@@ -1,6 +1,7 @@
 import { client } from "./../functions/dbConnect";
 import { Router } from "express";
 import fs from "fs";
+import rimraf from "rimraf";
 
 export const product = Router();
 
@@ -26,38 +27,30 @@ product.post("/add", async (req, res) => {
   }
 });
 
-product.post("/image", async (req, res) => {
-  console.log("hello");
-  if (req.method === "POST") {
-    const image = req.body;
-    if (/^data:image\/png;base64,/.test(image.image)) {
-      var base64Data = image.image.replace(/^data:image\/png;base64,/, "");
-    }
-    if (/^data:image\/jpeg;base64,/.test(image.image)) {
-      var base64Data = image.image.replace(/^data:image\/jpeg;base64,/, "");
-    }
-    const path = `public/utils/images/${image.folder}`;
+product.post("/image", async (req: any, res) => {
+  try {
+    const path = `public/utils/images/${req.body.folder}`;
     fs.mkdir(path, { recursive: true }, (error: any) => {
       if (error) {
-        console.log(error);
+        res.send(error.message);
       }
-      fs.writeFile(
-        `public/utils/images/${image.folder}/${image.id}.png`,
-        base64Data,
-        "base64",
-        function (err: any) {
-          if (err) console.log(err);
-        }
+      req.files.image.mv(
+        `public/utils/images/${req.body.folder}/${req.files.image.name}`
       );
     });
-    fs.writeFile(
-      `public/utils/images/${image.folder}/${image.id}.png`,
-      base64Data,
-      "base64",
-      function (err: any) {
-        if (err) console.log(err);
-      }
-    );
-    res.json({ url: `utils/images/${image.folder}/${image.id}.png` });
+    res.json({
+      url: `public/utils/images/${req.body.folder}/${req.files.image.name}`,
+    });
+  } catch (e: any) {
+    res.send(e.message);
   }
+});
+
+product.delete("/image", async (req, res) => {
+  console.log(req.body);
+  rimraf(`${req.body.url}`, async function (e) {
+    if (e) {
+      throw new Error("Error");
+    } else res.status(200).json({ acknowledged: true, url: req.body.url });
+  });
 });
