@@ -37,7 +37,6 @@ product.post("/add", async (req, res) => {
 
 product.post("/image", async (req: any, res) => {
   try {
-    console.log(req.body);
     const path = `public/utils/images/${req.body.folder}`;
     fs.mkdir(path, { recursive: true }, (error: any) => {
       if (error) {
@@ -56,7 +55,6 @@ product.post("/image", async (req: any, res) => {
 });
 
 product.delete("/image", async (req, res) => {
-  console.log(req.body);
   try {
     rimraf(`${req.body.url}`, async function (e) {
       if (e) {
